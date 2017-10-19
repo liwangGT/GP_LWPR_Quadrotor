@@ -1,6 +1,6 @@
 # GP_LWPR_Quadrotor
 
-This is package to test: 
+This package is used to test: 
 Gaussian Process (GP), 
 LWPR, 
 Sparse Spectrum GP, 
