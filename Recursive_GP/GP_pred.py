@@ -32,17 +32,13 @@ class GP_pred():
         self.y1 = np.array([yinit[0]])
         self.y2 = np.array([yinit[1]])
         self.y3 = np.array([yinit[2]])
-        self.y4 = np.array([yinit[3]])
-        self.y5 = np.array([yinit[4]])
-        self.y6 = np.array([yinit[5]])
+
         # data to remember
         self.xmem  = np.empty((0,xinit.size))
         self.y1mem = np.empty((0,))
         self.y2mem = np.empty((0,))
         self.y3mem = np.empty((0,))
-        self.y4mem = np.empty((0,))
-        self.y5mem = np.empty((0,))
-        self.y6mem = np.empty((0,))
+
 
 
     def Predict(self, xQuery):
@@ -59,11 +55,8 @@ class GP_pred():
         my1 = np.dot(np.dot(k,self.Kinv),self.y1)
         my2 = np.dot(np.dot(k,self.Kinv),self.y2)
         my3 = np.dot(np.dot(k,self.Kinv),self.y3)
-        my4 = np.dot(np.dot(k,self.Kinv),self.y4)
-        my5 = np.dot(np.dot(k,self.Kinv),self.y5)
-        my6 = np.dot(np.dot(k,self.Kinv),self.y6)
         Vy = c - np.dot(np.dot(k,self.Kinv),k)
-        yQuery = np.array([my1, my2, my3, my4, my5, my6])
+        yQuery = np.array([my1, my2, my3])
         return yQuery, Vy
 
     def Reset(self):
@@ -94,9 +87,6 @@ class GP_pred():
                 self.y1mem = np.append(self.y1mem, self.y1[kind])
                 self.y2mem = np.append(self.y2mem, self.y2[kind])
                 self.y3mem = np.append(self.y3mem, self.y3[kind])
-                self.y4mem = np.append(self.y4mem, self.y4[kind])
-                self.y5mem = np.append(self.y5mem, self.y5[kind])
-                self.y6mem = np.append(self.y6mem, self.y6[kind])
                 # delete from GP
                 mask = np.ones(len(self.xx), dtype = bool)
                 mask[kind] = False
@@ -104,9 +94,6 @@ class GP_pred():
                 self.y1 = self.y1[mask,...]
                 self.y2 = self.y2[mask,...]
                 self.y3 = self.y3[mask,...]
-                self.y4 = self.y4[mask,...]
-                self.y5 = self.y5[mask,...]
-                self.y6 = self.y6[mask,...]
                 Kperm = np.vstack((self.Kinv[mask,:], self.Kinv[kind,:]))
                 Kperm = np.hstack((self.Kinv[:,mask], self.Kinv[:,kind][:,None]))
                 Ka = Kperm[0:-1,0:-1]
@@ -128,36 +115,33 @@ class GP_pred():
             self.y1= np.append(self.y1, ysample[0])
             self.y2= np.append(self.y2, ysample[1])
             self.y3= np.append(self.y3, ysample[2])
-            self.y4= np.append(self.y4, ysample[3])
-            self.y5= np.append(self.y5, ysample[4])
-            self.y6= np.append(self.y6, ysample[5])
 
 
 
 
 if __name__ == '__main__':
     # simulate signal
-    N = 400
+    N = 100
     t = np.arange(0, 5, 5.0/N)
-    yhist = np.empty((0,6))
-    ypredhist = np.empty((0,6))
-    xall = np.vstack((np.sin(t), np.cos(t), t**2, t+10))
+    yhist = np.empty((0,3))
+    ypredhist = np.empty((0,3))
+    xall = np.vstack((np.sin(t), np.cos(t), t**2, t+10, 10*np.exp(-t/10), t**3, 2*t-10, 3*t+3, t**2-t))
     xnew = xall[:,0]
-    ynew = np.array([xall[0,0], xall[1,0], xall[2,0], xall[3,0], xall[1,0], xall[2,0]])
+    ynew = np.array([xall[0,0], xall[1,0], xall[2,0]])
     gp = GP_pred(xnew, ynew)
     for i in range(1,N):
         xnew = xall[:,i]
-        ynew = np.array([xall[0,i], xall[1,i], xall[2,i], xall[3,i], xall[1,i], xall[2,i]])
+        ynew = np.array([xall[0,i], xall[1,i], xall[2,i]])
         gp.Update(xnew, ynew)
-        xpred = np.array([sin(t[i]),cos(t[i]),(t[i])**2, t[i]+10])
+        xpred = np.array([sin(t[i]),cos(t[i]),(t[i])**2, t[i]+10, 10*np.exp(-t[i]/10), t[i]**3, 2*t[i]-10, 3*t[i]+3, t[i]**2-t[i]])
         ypredict, Vy = gp.Predict(xpred)
         yhist = np.vstack((yhist, ynew[None,:]))
         ypredhist = np.vstack((ypredhist, ypredict[None,:]))
 
 
     # get optimal parameters using GPy
-    kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=1.)
-    yall = np.hstack((gp.y1[:,None], gp.y2[:,None], gp.y3[:,None], gp.y4[:,None], gp.y5[:,None], gp.y6[:,None]))
+    kernel = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1.)
+    yall = np.hstack((gp.y1[:,None], gp.y2[:,None], gp.y3[:,None]))
     m = GPy.models.GPRegression(gp.xx,gp.y1[:,None],kernel)
     print m
     print m.rbf.gradient
