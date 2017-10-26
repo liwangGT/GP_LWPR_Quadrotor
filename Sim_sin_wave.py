@@ -33,7 +33,7 @@ if __name__ == '__main__':
     xall = np.vstack((np.sin(t), np.cos(t), t**2, t+10, 10*np.exp(-t/10), t**3, 2*t-10, 3*t+3, t**2-t))
     xnew = xall[:,0]
     ynew = np.array([xall[0,0], xall[1,0], xall[2,0]])
-    gp = GP_pred(xnew, ynew)
+    gp = gp_cf.GP_pred(xnew, ynew)
     for i in range(1,N):
         xnew = xall[:,i]
         ynew = np.array([xall[0,i], xall[1,i], xall[2,i]])

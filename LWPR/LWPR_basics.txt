@@ -1,0 +1,14 @@
+From: http://wcms.inf.ed.ac.uk/ipab/slmc/research/software-lwpr
+
+Locally Weighted Projection Regression (LWPR) is an algorithm that achieves nonlinear function approximation in high dimensional spaces with redundant and irrelevant input dimensions. At its core, it uses locally linear models, spanned by a small number of univariate regressions in selected directions in input space. A locally weighted variant of Partial Least Squares (PLS) is employed for doing the dimensionality reduction. This nonparametric local learning system
+
+
+
+When to use LWPR (and when not)
+LWPR is particularly suited for the following regression problems:
+
+    The function to be learnt is non-linear. Otherwise having multiple local models is a waste of resources, and you should rather use ordinary linear regression, or (global) PLS for the case of high-dimensional or irrelevant inputs.
+    There are large amounts of training data. If you desire good generalization from only relatively few samples (say, less than 2000), you are probably better off with Gaussian Processes (GP). LWPR needs that much data to properly detect the local dimensionality (number of projection directions) and the scale on which the regression function is locally linear. If the training set is small, the samples need to be presented to LWPR multiple times in random order.
+    Your application requires incremental, online training. If you can afford to collect the data beforehand, and the time required for batch learning is not critical, LWPR loses its edge against SVM regression, or (Sparse) GP regression. When compared to global function approximators like multi-layer neural networks, LWPR has the tremendous advantage that its local models learn independently and without interference.
+    The input space is high-dimensional, but the data lies on low-dimensional manifolds. LWPR places local models only where they are needed, and can detect the local dimensionality through PLS, yielding robust estimates of the regression coefficients. The latter feature sets off LWPR against previous (but otherwise similar) algorithms such as Receptive Field Weighted Regression.
+    The model may require adaptation, since the target mapping may change over time. This suits LWPR very well because a built-in forgetting factor can be tuned to match the expected time scale at which such changes occur. The adaptation then usually happens quite fast, since the overall placement of receptive fields, their size, and the local PLS directions of a well-trained model can often be kept, while the regression parameters get re-adjusted.
