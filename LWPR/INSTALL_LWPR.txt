@@ -1,0 +1,27 @@
+The following instructions enable basic utilization of the LWPR library in python on Linux systems.
+
+It DOES NOT enable multithreading or build MEX files for MATLAB. For instructions on enabling these features, read the INSTALL.TXT document included within the lwpr-1.2.6 directory.
+
+Prerequisites:
+	- EXPAT library is installed (supports reading LWPR models from XML files)
+	- python-distutils is installed (for installing the LWPR module in python)
+	- python-numpy is installed (required dependency)
+
+Steps:
+	INSTALLING LWPR LIBRARY
+	1. After extracting the files from lwpr-1.2.6.zip, open a terminal and navigate to
+	   the topmost folder (.../lwpr-1.2.6)
+	2. In the terminal, enter the following commands:
+		./configure
+		make
+		sudo make install
+
+	INSTALLING PYTHON MODULE
+	3. In the terminal, navigate into the python subdirectory (.../lwpr-1.2.6/python)
+	4. Enter the following commands:
+		python setup.py build
+		python setup.py install
+
+	TEST INSTALLATION
+	5. In the python subdirectory, run the provided test script with the command:
+		python test.py
