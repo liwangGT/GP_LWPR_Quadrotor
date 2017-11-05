@@ -56,6 +56,7 @@ if __name__ == "__main__":
 
     # consider 1 agents
     N = 1
+    deg = 8 # spline poly degree is set to 8
     # waypoints
     p0 = dict()
     p0[0] = np.array([[-1, -1, 0],
@@ -106,7 +107,7 @@ if __name__ == "__main__":
         if (k==len(p0)):
             k = 0
         T = Tp[j]
-        coeff = Interp(p0[j], p0[k], T) # interp between p0 and p1
+        coeff = Interp(p0[j], p0[k], T, deg) # interp between p0 and p1
         while (t<Tp[j]):
            t += dt
            pk = ExtractVal(coeff, t, T)
