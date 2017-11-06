@@ -93,8 +93,11 @@ class Shpere3D():
 
 class Coord3D():
     def __init__(self, ax, initpos, roll=0.0, pitch=0.0, yaw=0.0):
-        self.r0 = 0.15#0.07
-        self.r1 = 0.08#0.08/2
+        self.traj = np.zeros((0,3))
+        self.traj = np.vstack((self.traj, initpos))
+        self.ptraj, = plt.plot(self.traj[:,0] , self.traj[:,1], self.traj[:,2], 'k--')
+        self.r0 = 0.08#0.07
+        self.r1 = 0.06#0.08/2
         R = self.RotMat()
         L = 0.35
         self.hx, = plt.plot([initpos[0] , initpos[0]+L*R[0,0]], [initpos[1] , initpos[1]+L*R[1,0]], [initpos[2] , initpos[2]+L*R[2,0]], 'r')
@@ -151,6 +154,13 @@ class Coord3D():
         #np.array([np.dot(newM, np.dot(inv(self.M), (x, y, 0))) + (0, 0, pos[2]) for x, y in verts])
         self.pos = pos
         self.M = newM
+
+        # update trajectory
+        self.traj = np.vstack((self.traj, pos))
+        self.ptraj.set_xdata(self.traj[:,0])
+        self.ptraj.set_ydata(self.traj[:,1])
+        self.ptraj.set_3d_properties(self.traj[:,2])
+        
 
 class Rect2D():
     def __init__(self, ax, pos, tail, c = 'g'):

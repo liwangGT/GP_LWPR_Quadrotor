@@ -19,6 +19,7 @@ from cvxopt import matrix, solvers
 import pickle #save multiple objects
 
 from geometry_msgs.msg import Twist
+from Quad_visual import *
 
 def norm(p):
     temp = 0
@@ -131,7 +132,7 @@ class CF():
         msg.angular.z = yawrate
         self.pubCmd_diff.publish(msg)
 
-
+"""
 class Shpere3D():
     def __init__(self, initpos, ax):
         u, v = np.mgrid[0:2*PI:9j, 0:PI:5j]
@@ -175,7 +176,7 @@ class Coord3D():
         self.hz.set_xdata([pos[0] , pos[0]+L*R[0,2]])
         self.hz.set_ydata([pos[1] , pos[1]+L*R[1,2]])
         self.hz.set_3d_properties([pos[2] , pos[2]+L*R[2,2]])
-
+"""
 
 def Safe_Barrier_3D(x, uhat, Kb):
     u = uhat.copy() #init u
@@ -312,7 +313,7 @@ if __name__ == '__main__':
     cfs   = dict()
     CfCoord = dict()
     for i in range(N):
-        Cfplt[i] = Shpere3D(p0[i][0,:], ax)
+        #Cfplt[i] = Shpere3D(p0[i][0,:], ax)
         CfCoord[i] = Coord3D(ax, p0[i][0,:])
         cfs[i] = CF(p0[i][0,:],i)
     plt.draw()
@@ -440,7 +441,7 @@ if __name__ == '__main__':
             #visualize
             for i in range(N):
                 cfs[i].pos = x[i][0,:]
-                Cfplt[i].update(cfs[i].pos,ax)
+                #Cfplt[i].update(cfs[i].pos,ax)
                 
             if t_real%5 == 1:
                 plt.pause(.001)
