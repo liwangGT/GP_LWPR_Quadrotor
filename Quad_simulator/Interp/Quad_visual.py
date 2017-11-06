@@ -92,7 +92,7 @@ class Shpere3D():
         #plt.draw()
 
 class Coord3D():
-    def __init__(self, ax, initpos, roll=0.0, pitch=0.0, yaw=0.0):
+    def __init__(self, ax, initpos, roll=0.0, pitch=0.0, yaw=0.0, trans=1.0):
         self.traj = np.zeros((0,3))
         self.traj = np.vstack((self.traj, initpos))
         self.ptraj, = plt.plot(self.traj[:,0] , self.traj[:,1], self.traj[:,2], 'k--')
@@ -100,16 +100,16 @@ class Coord3D():
         self.r1 = 0.06#0.08/2
         R = self.RotMat()
         L = 0.35
-        self.hx, = plt.plot([initpos[0] , initpos[0]+L*R[0,0]], [initpos[1] , initpos[1]+L*R[1,0]], [initpos[2] , initpos[2]+L*R[2,0]], 'r')
-        self.hy, = plt.plot([initpos[0] , initpos[0]+L*R[0,1]], [initpos[1] , initpos[1]+L*R[1,1]], [initpos[2] , initpos[2]+L*R[2,1]], 'g')
-        self.hz, = plt.plot([initpos[0] , initpos[0]+L*R[0,2]], [initpos[1] , initpos[1]+L*R[1,2]], [initpos[2] , initpos[2]+L*R[2,2]], 'b')
+        self.hx, = plt.plot([initpos[0] , initpos[0]+L*R[0,0]], [initpos[1] , initpos[1]+L*R[1,0]], [initpos[2] , initpos[2]+L*R[2,0]], 'r', alpha=min(1,trans*2))
+        self.hy, = plt.plot([initpos[0] , initpos[0]+L*R[0,1]], [initpos[1] , initpos[1]+L*R[1,1]], [initpos[2] , initpos[2]+L*R[2,1]], 'g', alpha=min(1,trans*2))
+        self.hz, = plt.plot([initpos[0] , initpos[0]+L*R[0,2]], [initpos[1] , initpos[1]+L*R[1,2]], [initpos[2] , initpos[2]+L*R[2,2]], 'b', alpha=min(1,trans*2))
         d = np.cross((R[0,2], R[1,2], R[2,2]),(0, 0, 1)) #Obtain the rotation vector    
         self.M = rotation_matrix(d) #Get the rotation matrix
         self.pos = initpos
-        self.disk1 = matplotlib.patches.Circle((initpos[0]+self.r0/sqrt(2), initpos[1]+self.r0/sqrt(2)), self.r1)
-        self.disk2 = matplotlib.patches.Circle((initpos[0]+self.r0/sqrt(2), initpos[1]-self.r0/sqrt(2)), self.r1)
-        self.disk3 = matplotlib.patches.Circle((initpos[0]-self.r0/sqrt(2), initpos[1]+self.r0/sqrt(2)), self.r1)
-        self.disk4 = matplotlib.patches.Circle((initpos[0]-self.r0/sqrt(2), initpos[1]-self.r0/sqrt(2)), self.r1)
+        self.disk1 = matplotlib.patches.Circle((initpos[0]+self.r0/sqrt(2), initpos[1]+self.r0/sqrt(2)), self.r1, alpha=trans)
+        self.disk2 = matplotlib.patches.Circle((initpos[0]+self.r0/sqrt(2), initpos[1]-self.r0/sqrt(2)), self.r1, alpha=trans)
+        self.disk3 = matplotlib.patches.Circle((initpos[0]-self.r0/sqrt(2), initpos[1]+self.r0/sqrt(2)), self.r1, alpha=trans)
+        self.disk4 = matplotlib.patches.Circle((initpos[0]-self.r0/sqrt(2), initpos[1]-self.r0/sqrt(2)), self.r1, alpha=trans)
         ax.add_patch(self.disk1)
         ax.add_patch(self.disk2)
         ax.add_patch(self.disk3)
