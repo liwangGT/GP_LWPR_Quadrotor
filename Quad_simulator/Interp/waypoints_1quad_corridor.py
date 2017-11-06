@@ -20,23 +20,6 @@ from Spline_interp import *
 from Quad_visual import *
 
 
-def Invert_diff_flat_output(x):
-    #note yaw =0 is fixed
-    m = 35.89/1000
-    g = 9.8
-    beta1 = - x[2,0]
-    beta2 = - x[2,2] + 9.8
-    beta3 = x[2,1]
-
-    roll = atan2(beta3,sqrt(beta1**2+beta2**2))
-    pitch = atan2(beta1,beta2)
-    yaw = 0
-    a_temp = LA.norm([0,0,g]-x[2,:])
-    # acc g correspond to 49201
-    thrust = int(a_temp/g*49201)
-    return roll,pitch,yaw
-
-
 if __name__ == "__main__":
     #rospy.init_node('cf_barrier', anonymous = True)
     fig = plt.figure()
@@ -52,6 +35,9 @@ if __name__ == "__main__":
     for xb, yb, zb in zip(Xb, Yb, Zb):
        ax.plot([xb], [yb], [zb], 'w')
     plt.pause(.001)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
 
 
     # consider 1 agents
@@ -59,7 +45,7 @@ if __name__ == "__main__":
     deg = 8 # spline poly degree is set to 8
     # waypoints
     p0 = dict()
-    p0[0] = np.array([[-1, -1, 0],
+    p0[0] = np.array([[-1., -1., 0],
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]])
@@ -71,33 +57,38 @@ if __name__ == "__main__":
         CfCoord[i] = Coord3D(ax, p0[i][0,:])
 
     # initial point
-    p0[1] = np.array([[-1, -1, -0.8],
+    p0[1] = np.array([[-1., -1., -0.8],
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]])
 
     # end point
-    p0[2] = np.array([[0.5, 1.0, -1.2],
-                   [-0.2, 0.2, -0.1],
-                   [3.3, 4.4, 4.2],
+    p0[2] = np.array([[1.4, 1.0, -1.9],
+                   [-0.0, 0.4, -0.2],
+                   [-4, 2, 1],
                    [0, 0, 0]])
 
     # end point
-    p0[3] = np.array([[-1, 0, -0.5],
-                   [0.5, 1.6, 1.2],
-                   [0.1, 0.2, 0.3],
+    p0[3] = np.array([[-1.2, 1.0, -1.7],
+                   [-0.0, -0.3, 0.2],
+                   [4, -2, -1],
+                   [0, 0, 0]])
+    # end point
+    p0[4] = np.array([[-1., 0, -1.3],
+                   [0.1, -0.2, 0.6],
+                   [1, 1.2, 1.3],
                    [0.1, 0.3, 0.4]])
-    p0[4] = np.array([[1, 0, -0.5],
-                   [0.5, -1.5, -1.2],
-                   [0.1, 0, 0.3],
+    p0[5] = np.array([[1, 0, -1.3],
+                   [0.5, -0.2, -0.6],
+                   [1., 2.0, 1.3],
                    [0, 0.1, 0]])
 
     # end point
-    p0[5] = np.array([[1.5, -1.0, -0.6],
+    p0[6] = np.array([[1.5, -1.0, -0.8],
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]])
-    p0[6] = np.array([[1.5, -1.0, 0],
+    p0[7] = np.array([[1.5, -1.0, 0],
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]])
@@ -110,17 +101,35 @@ if __name__ == "__main__":
         wp[jj].update(p0[jj][0,:], roll, pitch, yaw)
 
 
-    Tp = np.array([1, 2, 2, 2, 2, 1, 2])
+    # draw a corridor constraint
+    delta = 0.1 # corridor width is 0.05m
+    x=np.linspace(p0[4][0,0],p0[5][0,0], 10)
+    z=np.linspace(-delta, delta, 10)
+    Xc, Zc=np.meshgrid(x, z)
+    Yc = np.sqrt(delta**2-Zc**2)
+
+    # Draw parameters
+    rstride = 4
+    cstride = 3
+    ax.plot_surface(Xc, Yc+p0[5][0,1], Zc+p0[5][0,2], alpha=0.1, rstride=rstride, cstride=cstride)
+    ax.plot_surface(Xc, -Yc+p0[5][0,1], Zc+p0[5][0,2], alpha=0.1, rstride=rstride, cstride=cstride)
+
+
+    time.sleep(4)
+    plt.pause(.001)
+    time.sleep(3)
+    plt.pause(.001)
+    time.sleep(3)
+    Tp = np.array([0.8, 1.5, 1.5, 1., 1., 1., 0.8,1.,1.])
     # interpolating waypoints
-    dt = 0.02
-    for j in range(len(p0)):
+    dt = 0.05
+    for j in range(len(p0)-1):
         t = 0
         k = j+1
-        if (k==len(p0)):
-            k = 0
         T = Tp[j]
-        if (j==3):
+        if (j==4):
             coeff = Interp_corridor(p0[j], p0[k], T, 15) # interp between p0 and p1
+            #coeff = Interp(p0[j], p0[k], T, deg) # interp between p0 and p1
         else:
             coeff = Interp(p0[j], p0[k], T, deg) # interp between p0 and p1
         while (t<Tp[j]):
@@ -131,5 +140,5 @@ if __name__ == "__main__":
            CfCoord[0].update(pk[0,:], roll, pitch, yaw)
            #Cfplt[0].update(pk[0,:],ax)
            plt.pause(.001)
-           
+
     plt.show()

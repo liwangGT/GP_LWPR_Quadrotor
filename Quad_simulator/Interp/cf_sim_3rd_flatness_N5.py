@@ -255,6 +255,9 @@ if __name__ == '__main__':
     ax  = fig.gca(projection = '3d')
     ax.set_aspect('equal')
     ax.invert_zaxis()
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
 
     # Create cubic bounding box to simulate equal aspect ratio
     max_range = np.array([3, 2, 1.6]).max()
@@ -367,6 +370,15 @@ if __name__ == '__main__':
     t_real = 0
     kk0 = 0
     kk = 0 # waypoint index
+    time.sleep(2)
+    plt.pause(.001)
+    time.sleep(2)
+    plt.pause(.001)
+    time.sleep(2)
+    plt.pause(.001)
+    time.sleep(2)
+    plt.pause(.001)
+    time.sleep(2)
     while not (rospy.is_shutdown() or t_real==int(t_total/dt)):
         tt0 = rospy.Time.now()
         if flag_done0 == 1 and kk <5:

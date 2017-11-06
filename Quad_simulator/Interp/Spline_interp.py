@@ -15,6 +15,24 @@ import time
 import numpy as np
 from cvxopt import matrix, solvers
 import pickle #save multiple objects
+from Quad_visual import *
+
+
+def Invert_diff_flat_output(x):
+    #note yaw =0 is fixed
+    m = 35.89/1000
+    g = 9.8
+    beta1 = - x[2,0]
+    beta2 = - x[2,2] + 9.8
+    beta3 = x[2,1]
+
+    roll = atan2(beta3,sqrt(beta1**2+beta2**2))
+    pitch = atan2(beta1,beta2)
+    yaw = 0
+    a_temp = LA.norm([0,0,g]-x[2,:])
+    # acc g correspond to 49201
+    thrust = int(a_temp/g*49201)
+    return roll,pitch,yaw
 
 # min-snap spline interpolation, generates polynomial basis coefficients
 def Interp(p0, p1, T, deg):
@@ -196,81 +214,89 @@ if __name__ == "__main__":
     plt.pause(.001)
 
 
+    # waypoints
+    p0 = dict()
+    p0[0] = np.array([[-1., -1., 0],
+                   [0, 0, 0],
+                   [0, 0, 0],
+                   [0, 0, 0]])
     # initial point
-    p0 = np.array([[-1, 0, -0.5],
-                   [0.5, 1.6, 1.2],
-                   [0.1, 0.2, 0.3],
+    p0[1] = np.array([[-1., -1., -0.8],
+                   [0, 0, 0],
+                   [0, 0, 0],
+                   [0, 0, 0]])
+
+    # end point
+    p0[2] = np.array([[1.4, 1.0, -1.9],
+                   [-0.0, 0.4, -0.2],
+                   [-4, 2, 1],
+                   [0, 0, 0]])
+
+    # end point
+    p0[3] = np.array([[-1.2, 1.0, -1.7],
+                   [-0.0, -0.3, 0.2],
+                   [4, -2, -1],
+                   [0, 0, 0]])
+    # end point
+    p0[4] = np.array([[-1., 0, -1.3],
+                   [0.1, -0.2, 0.6],
+                   [1, 1.2, 1.3],
                    [0.1, 0.3, 0.4]])
-    plotQuiver(p0, ax, 'g-')
-
-    # end point
-    p1 = np.array([[1, 0, -0.5],
-                   [0.5, -1.5, -1.2],
-                   [0.1, 0, 0.3],
+    p0[5] = np.array([[1, 0, -1.3],
+                   [0.5, -0.2, -0.6],
+                   [1., 2.0, 1.3],
                    [0, 0.1, 0]])
-    plotQuiver(p1, ax, 'r-')
 
     # end point
-    p2 = np.array([[0.3, -1.5, -1.5],
-                   [2, 1, 1.5],
-                   [0.1, 0.2, 0.1],
-                   [0, 0.1, 0.2]])
-    plotQuiver(p2, ax, 'b-')
-
-    # end point
-    p3 = np.array([[1.3, 1.5, -1.0],
-                   [-2, 1, -1.5],
-                   [-0.2, 0.2, 0],
-                   [-0.3, 0, -0.1]])
-    plotQuiver(p3, ax, 'y-')
-
-    p4 = np.array([[-0.6, 1.0, -1.0],
-                   [0.8, -1.2, 1.3],
+    p0[6] = np.array([[1.5, -1.0, -0.8],
+                   [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]])
-    plotQuiver(p4, ax, 'k-')
-    p5 = np.array([[1.6, 1.0, -1.0],
-                   [-0.9, -1.4, 1.2],
+    p0[7] = np.array([[1.5, -1.0, 0],
+                   [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]])
-    plotQuiver(p5, ax, 'k-')
+
+    # draw waypoints
+    wp = dict()
+    for jj in range(len(p0)):
+        wp[jj] = Coord3D(ax, p0[jj][0,:], trans=0.2)
+        roll, pitch, yaw = Invert_diff_flat_output(p0[jj])
+        wp[jj].update(p0[jj][0,:], roll, pitch, yaw)
 
 
+    # draw a corridor constraint
+    delta = 0.1 # corridor width is 0.05m
+    x=np.linspace(p0[4][0,0],p0[5][0,0], 10)
+    z=np.linspace(-delta, delta, 10)
+    Xc, Zc=np.meshgrid(x, z)
+    Yc = np.sqrt(delta**2-Zc**2)
+
+    # Draw parameters
+    rstride = 4
+    cstride = 4
+    ax.plot_surface(Xc, Yc+p0[5][0,1], Zc+p0[5][0,2], alpha=0.2, rstride=rstride, cstride=cstride)
+    ax.plot_surface(Xc, -Yc+p0[5][0,1], Zc+p0[5][0,2], alpha=0.2, rstride=rstride, cstride=cstride)
+
+    Tp = np.array([1., 2., 0.5, 1., 1., 1., 1.,1.,1.])
     # spline interpolations, min-snap splines
-    coeff = Interp_corridor(p0, p1, 1, 15) # interp between p0 and p1
-    #coeff = Interp(p0, p1, 1, 8) # interp between p0 and p1
-    t = np.linspace(0, 1, 100, endpoint=True)
-    for i in range(t.size):
-       pk = ExtractVal(coeff, t[i], 1)
-       ax.plot([pk[0,0]], [pk[0,1]], [pk[0,2]], 'g.')
-
-    coeff = Interp(p1, p2, 1, 8) # interp between p1 and p2
-    t = np.linspace(0, 1, 100, endpoint=True)
-    for i in range(t.size):
-       pk = ExtractVal(coeff, t[i], 1)
-       ax.plot([pk[0,0]], [pk[0,1]], [pk[0,2]], 'r*')
-
-    coeff = Interp(p2, p3,1, 8) # interp between p2 and p3
-    t = np.linspace(0, 1, 100, endpoint=True)
-    for i in range(t.size):
-       pk = ExtractVal(coeff, t[i],1)
-       ax.plot([pk[0,0]], [pk[0,1]], [pk[0,2]], 'b*')
-
-    coeff = Interp(p3, p4,1, 8) # interp between p3 and p0
-    t = np.linspace(0, 1, 100, endpoint=True)
-    for i in range(t.size):
-       pk = ExtractVal(coeff, t[i],1)
-       ax.plot([pk[0,0]], [pk[0,1]], [pk[0,2]], 'g*')
-
-    #coeff = Interp(p4, p5,1, 8) # interp between p3 and p0
-    coeff = Interp_corridor(p4, p5, 1, 15) # interp between p0 and p1
-    t = np.linspace(0, 1, 100, endpoint=True)
-    for i in range(t.size):
-       pk = ExtractVal(coeff, t[i],1)
-       ax.plot([pk[0,0]], [pk[0,1]], [pk[0,2]], 'g*')
+    for ii in range(len(p0)-1):
+        T = Tp[ii]
+        if (ii==4):
+            coeff = Interp_corridor(p0[ii], p0[ii+1], T, 15) # interp between p0 and p1
+        else:
+            coeff = Interp(p0[ii], p0[ii+1], T, 8) # interp between p0 and p1
+        t = np.linspace(0, 1, 100, endpoint=True)
+        for i in range(t.size):
+           pk = ExtractVal(coeff, t[i], 1)
+           ax.plot([pk[0,0]], [pk[0,1]], [pk[0,2]], 'g.')
 
 
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
     plt.show()
+    
 
 
 
