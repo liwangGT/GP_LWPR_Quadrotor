@@ -144,15 +144,15 @@ if __name__ == "__main__":
            thist = np.vstack((thist, t))
            xnew = np.hstack((pk[0,:], pk[1,:], np.array([roll, pitch, yaw])))
            xhist = np.vstack((xhist, xnew))
-           ynoise = 1.0 * (np.random.rand(3,) -0.5)
-           yhist = np.vstack((yhist, pk[2,:]*0.4+ynoise )) 
-           yreal = np.vstack((yhist, pk[2,:]*0.4)) 
+           ynoise = 2.5 * (np.random.rand(3,) -0.5)
+           yhist = np.vstack((yhist, pk[2,:]*0.5+ynoise )) 
+           yreal = np.vstack((yreal, pk[2,:]*0.5)) 
 
     # save ground truth data
     # x value is: (rx,ry,rz, vx,vy,vz, rho, pitch, yaw)
     # y value is: (y1,y2,y3)
     f = open('Sim_ground_truth02.pckl', 'w')
-    pickle.dump([thist, xhist, yhist, yreal], f)
+    pickle.dump([dt, xhist, yhist, yreal], f)
     f.close()
     print '----data logging completed!!!----'
 
