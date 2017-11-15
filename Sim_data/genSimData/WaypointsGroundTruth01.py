@@ -16,6 +16,8 @@ import numpy as np
 from cvxopt import matrix, solvers
 import pickle #save multiple objects
 
+# add quad simulator path
+sys.path.insert(0, '/home/li/gitRepo/GP_Quadrotor/Quad_simulator/Interp')
 from Spline_interp import *
 from Quad_visual import *
 
@@ -114,15 +116,13 @@ if __name__ == "__main__":
     ax.plot_surface(Xc, Yc+p0[5][0,1], Zc+p0[5][0,2], alpha=0.1, rstride=rstride, cstride=cstride)
     ax.plot_surface(Xc, -Yc+p0[5][0,1], Zc+p0[5][0,2], alpha=0.1, rstride=rstride, cstride=cstride)
 
-
-    #time.sleep(4)
-    #plt.pause(.001)
-    #time.sleep(3)
-    #plt.pause(.001)
-    #time.sleep(3)
     Tp = np.array([0.8, 1.5, 1.5, 1., 1., 1., 0.8,1.,1.])
     # interpolating waypoints
     dt = 0.05
+    thist = np.empty((0,1))
+    xhist = np.empty((0,9))
+    yhist = np.empty((0,3))
+    yreal = np.empty((0,3))
     for j in range(len(p0)-1):
         t = 0
         k = j+1
@@ -135,10 +135,27 @@ if __name__ == "__main__":
         while (t<Tp[j]):
            t += dt
            pk = ExtractVal(coeff, t, T)
-           print pk
+           #print pk
            roll, pitch, yaw = Invert_diff_flat_output(pk)
            CfCoord[0].update(pk[0,:], roll, pitch, yaw)
            #Cfplt[0].update(pk[0,:],ax)
            plt.pause(.001)
+           # log data
+           thist = np.vstack((thist, t))
+           xnew = np.hstack((pk[0,:], pk[1,:], np.array([roll, pitch, yaw])))
+           xhist = np.vstack((xhist, xnew))
+           ynoise = 1.0 * (np.random.rand(3,) -0.5)
+           yhist = np.vstack((yhist, pk[2,:]*0.4+ynoise )) 
+           yreal = np.vstack((yhist, pk[2,:]*0.4)) 
+
+    # save ground truth data
+    # x value is: (rx,ry,rz, vx,vy,vz, rho, pitch, yaw)
+    # y value is: (y1,y2,y3)
+    f = open('Sim_ground_truth01.pckl', 'w')
+    pickle.dump([thist, xhist, yhist, yreal], f)
+    f.close()
+    print '----data logging completed!!!----'
 
     plt.show()
+
+
