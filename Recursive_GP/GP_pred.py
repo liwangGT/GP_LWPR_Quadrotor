@@ -23,8 +23,10 @@ class GP_pred():
         # gp1: variance 0.57, lengthscal 3.25
         # gp2: variance 0.14, lengthscal 1.75
         # gp3: variance 9163, lengthscal 40
-        self.sigmaf = 2.0#15.2#2.0
-        self.sigmal = 3.8#3.0#3.8
+        # gp1: variance 51.8, lengthscal 3.8
+        # gp3: variance 9.16, lengthscal 0.8
+        self.sigmaf = 10.8#2.0#15.2#2.0
+        self.sigmal = 0.6#3.8#3.0#3.8
         self.Nlimit = 300
         self.Kinv = 1/self.sigmaf**2
         # data in GP
