@@ -17,7 +17,7 @@ from cvxopt import matrix, solvers
 import pickle #save multiple objects
 
 # add quad simulator path
-sys.path.insert(0, '/home/li/gitRepo/GP_Quadrotor/Quad_simulator/Interp')
+sys.path.insert(0, '/home/kgslovak/Desktop/Research/GP_LWPR_Quadrotor/Quad_simulator/Interp')
 from Spline_interp import *
 from Quad_visual import *
 
@@ -37,14 +37,15 @@ if __name__ == "__main__":
     # visualize yhist and yreal
     fig = plt.figure(1)
     plt.subplot(311)
-    plt.plot(t, yreal[:,0], 'r-', label='acc x')
-    plt.plot(t, yhist[:,0], 'g-', label='acc x')
+    plt.plot(t, yreal[:,0], 'r-', label='acc x (real)')
+    plt.plot(t, yhist[:,0], 'g-', label='acc x (hist)')
 
     plt.subplot(312)
-    plt.plot(t, yreal[:,1], 'r-', label='acc y')
-    plt.plot(t, yhist[:,1], 'g-', label='acc y')
+    plt.plot(t, yreal[:,1], 'r-', label='acc y (real)')
+    plt.plot(t, yhist[:,1], 'g-', label='acc y (hist)')
 
     plt.subplot(313)
-    plt.plot(t, yreal[:,2], 'r-', label='acc z')
-    plt.plot(t, yhist[:,2], 'g-', label='acc z')
+    plt.plot(t, yreal[:,2], 'r-', label='acc z (real)')
+    plt.plot(t, yhist[:,2], 'g-', label='acc z (hist)')
+
     plt.show()

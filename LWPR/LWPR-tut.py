@@ -12,10 +12,10 @@ Ytr = 5 + testfunc(Xtr) + 0.1 * random.normal(0, 1, (Ntr, 1)) * Xtr
  
 # initialize the LWPR model
 model = LWPR(1, 1)     
-model.init_D = 100 * eye(1)
+model.init_D = 20 * eye(1)
 model.update_D = True
 model.init_alpha = 40 * eye(1)
-model.meta = True
+model.meta = False
  
 # train the model
 for k in range(20):
@@ -31,8 +31,8 @@ for k in range(20):
              
              
 # test the model with unseen data   
-Ntest = 5000
-Xtest = linspace(0, 10.5, Ntest)
+Ntest = 500
+Xtest = linspace(0, 10, Ntest)
  
 Ytest = zeros((Ntest,1))
 Conf = zeros((Ntest,1))
