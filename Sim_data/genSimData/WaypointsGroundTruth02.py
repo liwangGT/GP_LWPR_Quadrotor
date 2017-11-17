@@ -144,7 +144,7 @@ if __name__ == "__main__":
            thist = np.vstack((thist, t))
            xnew = np.hstack((pk[0,:], pk[1,:], np.array([roll, pitch, yaw])))
            xhist = np.vstack((xhist, xnew))
-           ynoise = 2.5 * (np.random.rand(3,) -0.5)
+           ynoise = 1.5 * np.random.randn(3,)
            yhist = np.vstack((yhist, pk[2,:]*0.5+ynoise )) 
            yreal = np.vstack((yreal, pk[2,:]*0.5)) 
 

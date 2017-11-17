@@ -33,30 +33,36 @@ if __name__ == '__main__':
     # time sequence
     tN = len(xhist[:,0])
     t = np.linspace(0, dt*(tN-1), tN)
+    print "Number of data points is: ", tN
 
     """
     Method 0: full GP
     """
     # get optimal parameters using GPy
-    kernel0 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True)
+    kernel0 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
     m0 = GPy.models.GPRegression(xhist,yhist[:,0][:,None],kernel0)
     m0.optimize()
+    # optimized params [ variance 20.0, l0:3.74, l1:0.95; l2:1122.7; l3:7.31; 
+    #                    l4:5.57; l5:25.4; l6:761.1; l7:0.64; l8:1.0 ]
 
-    kernel1 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True)
+    kernel1 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
     m1 = GPy.models.GPRegression(xhist,yhist[:,1][:,None],kernel1)
     m1.optimize()
+    # optimized params [ variance 133.3, l0:489.9, l1:61.0; l2:313.9; l3:542.7; 
+    #                    l4:604.9; l5:56.4; l6:1.28; l7:29.4; l8:1.0 ]
 
-    kernel2 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True)
+    kernel2 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
     m2 = GPy.models.GPRegression(xhist,yhist[:,2][:,None],kernel2)
     m2.optimize()
-
+    # optimized params [ variance 5.97, l0:0.57, l1:141.7; l2:0.26; l3:215.0; 
+    #                    l4:96.8; l5:1.02; l6:0.70; l7:0.46; l8:1.0 ]
 
     print kernel0
-    print kernel0.lengthscale
+    print kernel0.rbf.lengthscale
     print kernel1
-    print kernel1.lengthscale
+    print kernel1.rbf.lengthscale
     print kernel2
-    print kernel2.lengthscale
+    print kernel2.rbf.lengthscale
 
     #print m
     #print m.rbf.gradient
@@ -101,15 +107,15 @@ if __name__ == '__main__':
     f, axarr = plt.subplots(3, sharex=True)
     axarr[0].plot(range(0,yhist.shape[0]), yhist[:,0], 'g-')
     axarr[0].plot(range(0,yhist.shape[0]), yreal[:,0], 'r--')
-    axarr[0].plot(range(0,yM0.shape[0]), yM0[:,0], 'b*')
+    axarr[0].plot(range(1,yM0.shape[0]+1), yM0[:,0], 'b*')
 
     axarr[1].plot(range(0,yhist.shape[0]), yhist[:,1], 'g-')
     axarr[1].plot(range(0,yhist.shape[0]), yreal[:,1], 'r--')
-    axarr[1].plot(range(0,yM0.shape[0]), yM0[:,1], 'b*')
+    axarr[1].plot(range(1,yM0.shape[0]+1), yM0[:,1], 'b*')
 
     axarr[2].plot(range(0,yhist.shape[0]), yhist[:,2], 'g-')
     axarr[2].plot(range(0,yhist.shape[0]), yreal[:,2], 'r--')
-    axarr[2].plot(range(0,yM0.shape[0]), yM0[:,2], 'b*')
+    axarr[2].plot(range(1,yM0.shape[0]+1), yM0[:,2], 'b*')
 
 
 

@@ -48,6 +48,7 @@ if __name__ == '__main__':
     sf2 = np.array(hp[1]).reshape(n, 1)
     sn2 = np.array(hp[2]).reshape(n, 1)
 
+    # n is x dimension, k is y dimension, D is number of frequencies, ell is 
     ssgp = SSGP(n, k, D, ell, sf2, sn2)
 
     start_update = time.time()
