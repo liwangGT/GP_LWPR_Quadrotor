@@ -102,10 +102,9 @@ if __name__ == '__main__':
         ym0,yV0 = m0.predict(xnew[None,:])
         ym1,yV1 = m1.predict(xnew[None,:])
         ym2,yV2 = m2.predict(xnew[None,:])
-        print ypred
         ypred = np.array([ym0, ym1, ym2]).reshape((3,))
-        print ypred
         yM0 = np.vstack((yM0, ypred))
+
 
     """
     Method 3: SSGP with uncertainty
@@ -160,28 +159,27 @@ if __name__ == '__main__':
     """
 
 
-
-
-
     # visualize data
     # Two subplots, the axes array is 1-d
     f, axarr = plt.subplots(3, sharex=True)
-    axarr[0].plot(range(0,yhist.shape[0]), yhist[:,0], 'g-')
-    axarr[0].plot(range(0,yhist.shape[0]), yreal[:,0], 'r--')
-    axarr[0].plot(range(1,yM0.shape[0]+1), yM0[:,0], 'b*')
-    axarr[0].plot(range(0,yM3.shape[0]), yM3[:,0], 'k+')
+    axarr[0].plot(range(0,yhist.shape[0]), yhist[:,0], 'g-', label='Data')
+    axarr[0].plot(range(0,yhist.shape[0]), yreal[:,0], 'r--', label='Real')
+    axarr[0].plot(range(1,yM0.shape[0]+1), yM0[:,0], 'b*', label='FullGP')
+    axarr[0].plot(range(0,yM3.shape[0]), yM3[:,0], 'k+', label='SSGP')
+    axarr[0].legend()
+    axarr[0].set_title('Acc X')
 
-    axarr[1].plot(range(0,yhist.shape[0]), yhist[:,1], 'g-')
-    axarr[1].plot(range(0,yhist.shape[0]), yreal[:,1], 'r--')
-    axarr[1].plot(range(1,yM0.shape[0]+1), yM0[:,1], 'b*')
-    axarr[1].plot(range(0,yM3.shape[0]), yM3[:,1], 'k+')
+    axarr[1].plot(range(0,yhist.shape[0]), yhist[:,1], 'g-', label='Data')
+    axarr[1].plot(range(0,yhist.shape[0]), yreal[:,1], 'r--', label='Real')
+    axarr[1].plot(range(1,yM0.shape[0]+1), yM0[:,1], 'b*', label='FullGP')
+    axarr[1].plot(range(0,yM3.shape[0]), yM3[:,1], 'k+', label='SSGP')
+    axarr[1].legend()
+    axarr[1].set_title('Acc Y')
 
-    axarr[2].plot(range(0,yhist.shape[0]), yhist[:,2], 'g-')
-    axarr[2].plot(range(0,yhist.shape[0]), yreal[:,2], 'r--')
-    axarr[2].plot(range(1,yM0.shape[0]+1), yM0[:,2], 'b*')
-    axarr[2].plot(range(0,yM3.shape[0]), yM3[:,2], 'k+')
-
-
-
-   
+    axarr[2].plot(range(0,yhist.shape[0]), yhist[:,2], 'g-', label='Data')
+    axarr[2].plot(range(0,yhist.shape[0]), yreal[:,2], 'r--', label='Real')
+    axarr[2].plot(range(1,yM0.shape[0]+1), yM0[:,2], 'b*', label='FullGP')
+    axarr[2].plot(range(0,yM3.shape[0]), yM3[:,2], 'k+', label='SSGP')
+    axarr[2].legend()
+    axarr[2].set_title('Acc Z')
     plt.show()
