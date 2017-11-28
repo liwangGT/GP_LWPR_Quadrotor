@@ -27,7 +27,7 @@ from SSGP_Uncertainty.ssgpy import SSGPy as SSGP  # change if ssgpy.so is in ano
 if __name__ == '__main__':
     # load sim data, x is 9 dimensional, y is 3 dimensional
     #f = open('genSimData/Sim_ground_truth01.pckl')
-    f = open('Sim_data/genSimData/Sim_ground_truth02.pckl')
+    f = open('Sim_data/genSimData/Sim_ground_truth01.pckl')
     dt, xhist, yhist, yreal =  pickle.load(f)
     f.close()
     
@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
 
     """
-    Method 3: SSGP with uncertainty
+    Method 2: SSGP with uncertainty
     """
     # n is x dimension, k is y dimension, D is number of frequencies, ell is 
     D = 25
@@ -164,24 +164,18 @@ if __name__ == '__main__':
     """
     # kernel = , 
     m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel0, num_inducing=20)
-    print m30
     m30.Z.unconstrain()
     m30.optimize('bfgs')
-    print m30
 
     m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel1,num_inducing=20)
-    print m31
-    print m31.inducing_inputs
     m31.Z.unconstrain()
     m31.optimize('bfgs')
     print m31
     print m31.inducing_inputs
 
     m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel2,num_inducing=20)
-    print m32
     m32.Z.unconstrain()
     m32.optimize('bfgs')
-    print m32
 
     # store prediction data
     yM3 = np.empty((0,3))
@@ -201,12 +195,20 @@ if __name__ == '__main__':
         # store predictions for comparision        
         yM3 = np.vstack((yM3, ypred))  
 
+
+    """
+    Method 4: Sparse Spectrum Gaussian Process Regression
+    """
+
+
+
     # visualize data
     # Two subplots, the axes array is 1-d
     f, axarr = plt.subplots(3, sharex=True)
     axarr[0].plot(range(0,yhist.shape[0]), yhist[:,0], 'g-', label='Data')
     axarr[0].plot(range(0,yhist.shape[0]), yreal[:,0], 'r--', label='Real')
     axarr[0].plot(range(1,yM0.shape[0]+1), yM0[:,0], 'b*', label='FullGP')
+    #axarr[0].plot(range(1,yM1.shape[0]+1), yM1[:,0], 'r.', label='RecurGP')
     axarr[0].plot(range(1,yM2.shape[0]+1), yM2[:,0], 'k+', label='SSGP')
     axarr[0].plot(range(1,yM3.shape[0]+1), yM3[:,0], 'kv', label='SSGP Induce')
     axarr[0].legend()
@@ -215,6 +217,7 @@ if __name__ == '__main__':
     axarr[1].plot(range(0,yhist.shape[0]), yhist[:,1], 'g-', label='Data')
     axarr[1].plot(range(0,yhist.shape[0]), yreal[:,1], 'r--', label='Real')
     axarr[1].plot(range(1,yM0.shape[0]+1), yM0[:,1], 'b*', label='FullGP')
+    #axarr[1].plot(range(1,yM1.shape[0]+1), yM1[:,1], 'r.', label='RecurGP')
     axarr[1].plot(range(1,yM2.shape[0]+1), yM2[:,1], 'k+', label='SSGP')
     axarr[1].plot(range(1,yM3.shape[0]+1), yM3[:,1], 'kv', label='SSGP Induce')
     axarr[1].legend()
@@ -223,6 +226,7 @@ if __name__ == '__main__':
     axarr[2].plot(range(0,yhist.shape[0]), yhist[:,2], 'g-', label='Data')
     axarr[2].plot(range(0,yhist.shape[0]), yreal[:,2], 'r--', label='Real')
     axarr[2].plot(range(1,yM0.shape[0]+1), yM0[:,2], 'b*', label='FullGP')
+    #axarr[2].plot(range(1,yM1.shape[0]+1), yM1[:,2], 'r.', label='RecurGP')
     axarr[2].plot(range(1,yM2.shape[0]+1), yM2[:,2], 'k+', label='SSGP')
     axarr[2].plot(range(1,yM3.shape[0]+1), yM3[:,2], 'kv', label='SSGP Induce')
     axarr[2].legend()

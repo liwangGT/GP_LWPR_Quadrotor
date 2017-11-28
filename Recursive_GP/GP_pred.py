@@ -20,13 +20,12 @@ from multiprocessing import Pool # multi-prcess for loop
 
 class GP_pred():
     def __init__(self, xinit, yinit):
-        # gp1: variance 0.57, lengthscal 3.25
-        # gp2: variance 0.14, lengthscal 1.75
-        # gp3: variance 9163, lengthscal 40
-        # gp1: variance 51.8, lengthscal 3.8
-        # gp3: variance 9.16, lengthscal 0.8
+        # using ARD kernel
+        # sigmaf = 10.8
+        # sigmal = 26.8, 0.32, 0.09, 1e4, 1e4, 2.21, 0.85, 1.1, 1.0
         self.sigmaf = 10.8#2.0#15.2#2.0
-        self.sigmal = 0.6#3.8#3.0#3.8
+        self.sigmal = np.array([26.8, 0.32, 0.09, 1e4, 1e4, 2.21, 0.85, 1.1, 1.0])
+        #0.6#3.8#3.0#3.8
         self.Nlimit = 300
         self.Kinv = 1/self.sigmaf**2
         # data in GP
@@ -47,13 +46,11 @@ class GP_pred():
         N1 = self.xx.shape[0]
         print N1
         # use xpred, xx, yy, Kinv to predict ypred
-        ktemp = np.sum((self.xx-np.kron(np.ones((N1,1)),xQuery[None,:]))**2,axis=1)
-        k = self.sigmaf**2*np.exp(-0.5*ktemp/self.sigmal**2)
+        ktemp = np.sum( ((self.xx-np.kron(np.ones((N1,1)),xQuery[None,:]))/self.sigmal)**2, axis=1)
+        k = self.sigmaf**2*np.exp(-0.5*ktemp)
+        #ktemp = np.sum( (self.xx-np.kron(np.ones((N1,1)),xQuery[None,:]))**2, axis=1)
+        #k = self.sigmaf**2*np.exp(-0.5*ktemp/self.sigmal**2)
         c = self.sigmaf**2
-        if N1 == 30:
-            print self.xx
-            print ktemp
-            print k
         my1 = np.dot(np.dot(k,self.Kinv),self.y1)
         my2 = np.dot(np.dot(k,self.Kinv),self.y2)
         my3 = np.dot(np.dot(k,self.Kinv),self.y3)
@@ -65,8 +62,8 @@ class GP_pred():
         N = self.xx.shape[0]
         K = np.empty((N,0))
         for i in range(N):
-            kxtemp = np.sum((self.xx-np.kron(np.ones((N,1)), self.xx[i,:]))**2, axis=1)
-            kx = self.sigmaf**2*np.exp(-0.5*kxtemp/self.sigmal**2)
+            kxtemp = np.sum( ((self.xx-np.kron(np.ones((N,1)), self.xx[i,:]))/self.sigmal )**2, axis=1)
+            kx = self.sigmaf**2*np.exp(-0.5*kxtemp)
             K = np.hstack((K, kx[:,None]))
         self.Kinv = pinv(K)
 
@@ -76,8 +73,8 @@ class GP_pred():
         # kse = sigmaf^2*exp(-0.5*(xi-xj)'*(xi-xj)/sigmal^2);
         xcomb = np.vstack((self.xx, self.xmem))
         N = xcomb.shape[0]
-        kxtemp = np.sum((xcomb-np.kron(np.ones((N,1)), xsample[None,:]))**2, axis=1)
-        kx = self.sigmaf**2*np.exp(-0.5*kxtemp/self.sigmal**2)
+        kxtemp = np.sum( ((xcomb-np.kron(np.ones((N,1)), xsample[None,:]))/self.sigmal)**2, axis=1)
+        kx = self.sigmaf**2*np.exp(-0.5*kxtemp)
         if max(kx) <= self.sigmaf**2*0.90:#0.93: # distinct, add new data
             # gp1 0.9, gp2, 0.9, gp3 
             if self.xx.shape[0]>=self.Nlimit: # remove a data point from GP
@@ -105,8 +102,8 @@ class GP_pred():
                 self.Kinv = Ka - np.dot(np.dot(1.0/Kc, Kb), Kb)
             # add new data to GP
             N2 = self.xx.shape[0]
-            k2temp = np.sum((self.xx-np.kron(np.ones((N2,1)), xsample[None,:]))**2, axis=1)
-            k2 = self.sigmaf**2*np.exp(-0.5*k2temp/self.sigmal**2)
+            k2temp = np.sum(((self.xx-np.kron(np.ones((N2,1)), xsample[None,:]))/self.sigmal )**2, axis=1)
+            k2 = self.sigmaf**2*np.exp(-0.5*k2temp)
             c2 = self.sigmaf**2
             blockA = self.Kinv + np.dot(self.Kinv, k2[:,None])*np.dot(k2[None,:],self.Kinv)/(c2-np.dot(np.dot(self.Kinv,k2),k2))
             blockB = -np.dot(self.Kinv,k2[:,None])/(c2-np.dot(np.dot(self.Kinv,k2),k2))
