@@ -137,7 +137,7 @@ if __name__ == '__main__':
     pred0 = ssgp0.predict_mean(xhist)
     pred1 = ssgp1.predict_mean(xhist)
     pred2 = ssgp2.predict_mean(xhist)
-    yM3 = np.hstack((pred0[:,None], pred1[:,None], pred2[:,None]))
+    yM2 = np.hstack((pred0[:,None], pred1[:,None], pred2[:,None]))
     end_pred = time.time()
 
     """
@@ -159,27 +159,72 @@ if __name__ == '__main__':
     """
 
 
+    """
+    Method 3: SSGP with inducing points
+    """
+    # kernel = , 
+    m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel0, num_inducing=20)
+    print m30
+    m30.Z.unconstrain()
+    m30.optimize('bfgs')
+    print m30
+
+    m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel1,num_inducing=20)
+    print m31
+    print m31.inducing_inputs
+    m31.Z.unconstrain()
+    m31.optimize('bfgs')
+    print m31
+    print m31.inducing_inputs
+
+    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel2,num_inducing=20)
+    print m32
+    m32.Z.unconstrain()
+    m32.optimize('bfgs')
+    print m32
+
+    # store prediction data
+    yM3 = np.empty((0,3))
+    for i in range(1,tN):
+        # make predictions
+        xnew = xhist[i,:]
+
+        # update model with actual data
+        ynew = yhist[i,:]          
+
+        # full GP prediction
+        ym0,yV0 = m30.predict(xnew[None,:])
+        ym1,yV1 = m31.predict(xnew[None,:])
+        ym2,yV2 = m32.predict(xnew[None,:])
+        ypred = np.array([ym0, ym1, ym2]).reshape((3,))
+
+        # store predictions for comparision        
+        yM3 = np.vstack((yM3, ypred))  
+
     # visualize data
     # Two subplots, the axes array is 1-d
     f, axarr = plt.subplots(3, sharex=True)
     axarr[0].plot(range(0,yhist.shape[0]), yhist[:,0], 'g-', label='Data')
     axarr[0].plot(range(0,yhist.shape[0]), yreal[:,0], 'r--', label='Real')
     axarr[0].plot(range(1,yM0.shape[0]+1), yM0[:,0], 'b*', label='FullGP')
-    axarr[0].plot(range(0,yM3.shape[0]), yM3[:,0], 'k+', label='SSGP')
+    axarr[0].plot(range(1,yM2.shape[0]+1), yM2[:,0], 'k+', label='SSGP')
+    axarr[0].plot(range(1,yM3.shape[0]+1), yM3[:,0], 'kv', label='SSGP Induce')
     axarr[0].legend()
     axarr[0].set_title('Acc X')
 
     axarr[1].plot(range(0,yhist.shape[0]), yhist[:,1], 'g-', label='Data')
     axarr[1].plot(range(0,yhist.shape[0]), yreal[:,1], 'r--', label='Real')
     axarr[1].plot(range(1,yM0.shape[0]+1), yM0[:,1], 'b*', label='FullGP')
-    axarr[1].plot(range(0,yM3.shape[0]), yM3[:,1], 'k+', label='SSGP')
+    axarr[1].plot(range(1,yM2.shape[0]+1), yM2[:,1], 'k+', label='SSGP')
+    axarr[1].plot(range(1,yM3.shape[0]+1), yM3[:,1], 'kv', label='SSGP Induce')
     axarr[1].legend()
     axarr[1].set_title('Acc Y')
 
     axarr[2].plot(range(0,yhist.shape[0]), yhist[:,2], 'g-', label='Data')
     axarr[2].plot(range(0,yhist.shape[0]), yreal[:,2], 'r--', label='Real')
     axarr[2].plot(range(1,yM0.shape[0]+1), yM0[:,2], 'b*', label='FullGP')
-    axarr[2].plot(range(0,yM3.shape[0]), yM3[:,2], 'k+', label='SSGP')
+    axarr[2].plot(range(1,yM2.shape[0]+1), yM2[:,2], 'k+', label='SSGP')
+    axarr[2].plot(range(1,yM3.shape[0]+1), yM3[:,2], 'kv', label='SSGP Induce')
     axarr[2].legend()
     axarr[2].set_title('Acc Z')
     plt.show()
