@@ -36,74 +36,44 @@ if __name__ == '__main__':
     t = np.linspace(0, dt*(tN-1), tN)
     print "Number of data points is: ", tN
 
+    # store prediciton data for methods: 
+    # 0-fullGP, 1-recurGP, 2-SSGPwUncertainty, 
+    # 3-SparseGPinduce, 4-SparseSpectrumGP, 5-LWPR
+    yM0 = np.empty((0,3))
+    yM1 = np.empty((0,3))
+    yM2 = np.empty((0,3))
+    yM3 = np.empty((0,3))
+    yM4 = np.empty((0,3))
+    yM5 = np.empty((0,3))
 
 
-
+    # construct GP regressors for five different methods
     """
     Method 0: full GP
     """
-    # get optimal parameters using GPy
+    # Optimize hyper parameter with full GP (GPy)
+    # get optimal parameters using GPy for dimension 0
     kernel0 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
     m0 = GPy.models.GPRegression(xhist,yhist[:,0][:,None],kernel0)
     m0.optimize()
-    # optimized params [ variance 20.0, l0:3.74, l1:0.95; l2:1122.7; l3:7.31; 
-    #                    l4:5.57; l5:25.4; l6:761.1; l7:0.64; l8:1.0 ]
 
+    # get optimal parameters using GPy for dimension 1
     kernel1 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
     m1 = GPy.models.GPRegression(xhist,yhist[:,1][:,None],kernel1)
     m1.optimize()
-    # optimized params [ variance 133.3, l0:489.9, l1:61.0; l2:313.9; l3:542.7; 
-    #                    l4:604.9; l5:56.4; l6:1.28; l7:29.4; l8:1.0 ]
 
+    # get optimal parameters using GPy for dimension 2
     kernel2 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
     m2 = GPy.models.GPRegression(xhist,yhist[:,2][:,None],kernel2)
     m2.optimize()
-    # optimized params [ variance 5.97, l0:0.57, l1:141.7; l2:0.26; l3:215.0; 
-    #                    l4:96.8; l5:1.02; l6:0.70; l7:0.46; l8:1.0 ]
-
-    print kernel0
-    print kernel0.rbf.lengthscale
-    print kernel1
-    print kernel1.rbf.lengthscale
-    print kernel2
-    print kernel2.rbf.lengthscale
-
-    #print m
-    #print m.rbf.gradient
-    #m.optimize()
-    #print m.rbf.gradient
-    #print m.rbf.variance
-    #print m.rbf.lengthscale
-    #print m.Gaussian_noise.variance
-
-
 
     """
     Method 1: recursive GP
     """
-    yM0 = np.empty((0,3))
-    yM1 = np.empty((0,3))
-    xnew = xhist[0,:]
+    # TODO: split recursive GP into three, each with different ARD params
+    xnew = xhist[0,:][None,:]
     ynew = yhist[0,:]
-    gpR  = gp_cf.GP_pred(xnew, ynew)
-    for i in range(1,tN):
-        # make predictions
-        xnew = xhist[i,:]
-        ypred, Vy = gpR.Predict(xnew)
-
-        # update model with actual data
-        ynew = yhist[i,:]
-        gpR.Update(xnew, ynew)
-
-        # store predictions for comparision        
-        yM1 = np.vstack((yM1, ypred))        
-
-        # full GP prediction
-        ym0,yV0 = m0.predict(xnew[None,:])
-        ym1,yV1 = m1.predict(xnew[None,:])
-        ym2,yV2 = m2.predict(xnew[None,:])
-        ypred = np.array([ym0, ym1, ym2]).reshape((3,))
-        yM0 = np.vstack((yM0, ypred))
+    gpR  = gp_cf.GP_pred(xnew.flatten(), ynew)
 
 
     """
@@ -111,96 +81,111 @@ if __name__ == '__main__':
     """
     # n is x dimension, k is y dimension, D is number of frequencies, ell is 
     D = 25
+    # construct kernal for dimension 0
     sf20 = kernel0.rbf.variance
     ell0 = kernel0.rbf.lengthscale
     sn20 = kernel0.white.variance
     ssgp0 = SSGP(9, 1, D, ell0, sf20, sn20)
 
+    # construct kernal for dimension 1
     sf21 = kernel1.rbf.variance
     ell1 = kernel1.rbf.lengthscale
     sn21 = kernel1.white.variance
     ssgp1 = SSGP(9, 1, D, ell1, sf21, sn21)
 
+    # construct kernal for dimension 2
     sf22 = kernel2.rbf.variance
     ell2 = kernel2.rbf.lengthscale
     sn22 = kernel2.white.variance
     ssgp2 = SSGP(9, 1, D, ell2, sf22, sn22)
-
-
-    start_update = time.time()
-    ssgp0.update(xhist, yhist[:,0][:,None])
-    ssgp1.update(xhist, yhist[:,1][:,None])
-    ssgp2.update(xhist, yhist[:,2][:,None])
-    end_update = time.time()
-
-    start_pred = time.time()
-    pred0 = ssgp0.predict_mean(xhist)
-    pred1 = ssgp1.predict_mean(xhist)
-    pred2 = ssgp2.predict_mean(xhist)
-    yM2 = np.hstack((pred0[:,None], pred1[:,None], pred2[:,None]))
-    end_pred = time.time()
-
-    """
-    plt.plot(range(len(pred)), pred, 'bo')
-    plt.plot(range(len(yhist[:,0])), yhist[:,0], 'ro')
-    fullgp = matplotlib.patches.Patch(color='green', label='Full GP')
-    sparsegp = matplotlib.patches.Patch(color='blue', label='SSGP')
-    actual = matplotlib.patches.Patch(color='red', label='Actual')
-    plt.legend([fullgp, sparsegp, actual], ['Full GP', 'SSGP', 'Actual'])
-    plt.show()
-
-    print "{0} ms to perform {1} updates".format((end_update - start_update) *
-                                                 1000, Ntrh)
-    print "{0} ms per update".format((end_update - start_update) * 1000 / Ntrh)
-
-    print "{0} ms to perform {1} predictions".format((end_pred - start_pred) *
-                                                     1000, Nts)
-    print "{0} ms per prediction".format((end_pred - start_pred) * 1000 / Nts)
-    """
+    
+    # init with the first data point
+    ssgp0.update(xnew, np.array([[ynew[0]]]))
+    ssgp1.update(xnew, np.array([[ynew[1]]]))
+    ssgp2.update(xnew, np.array([[ynew[2]]]))
 
 
     """
     Method 3: SSGP with inducing points
     """
-    # kernel = , 
+    # optimize inducing points for dimension 0
     m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel0, num_inducing=20)
     m30.Z.unconstrain()
     m30.optimize('bfgs')
 
+    # optimize inducing points for dimension 1
     m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel1,num_inducing=20)
     m31.Z.unconstrain()
     m31.optimize('bfgs')
-    print m31
-    print m31.inducing_inputs
 
+    # optimize inducing points for dimension 2
     m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel2,num_inducing=20)
     m32.Z.unconstrain()
     m32.optimize('bfgs')
-
-    # store prediction data
-    yM3 = np.empty((0,3))
-    for i in range(1,tN):
-        # make predictions
-        xnew = xhist[i,:]
-
-        # update model with actual data
-        ynew = yhist[i,:]          
-
-        # full GP prediction
-        ym0,yV0 = m30.predict(xnew[None,:])
-        ym1,yV1 = m31.predict(xnew[None,:])
-        ym2,yV2 = m32.predict(xnew[None,:])
-        ypred = np.array([ym0, ym1, ym2]).reshape((3,))
-
-        # store predictions for comparision        
-        yM3 = np.vstack((yM3, ypred))  
 
 
     """
     Method 4: Sparse Spectrum Gaussian Process Regression
     """
+    # code is a simpler version of method 2
 
 
+    """
+    Method 5: Locally Weighted Project Regressor (LWPR)
+    """
+    # TODO: add method here
+
+
+
+    # test incremental prediction
+    for i in range(1,tN):
+        start_update = time.time()
+
+        # get current state
+        xnew = xhist[i,:][None,:]
+
+        # make prediction
+        # method 0: full GP
+        ym0,yV0 = m0.predict(xnew)
+        ym1,yV1 = m1.predict(xnew)
+        ym2,yV2 = m2.predict(xnew)
+        ypred = np.array([ym0, ym1, ym2]).reshape((3,))
+        yM0 = np.vstack((yM0, ypred))
+        # method 1: recurGP
+        ypred, Vy = gpR.Predict(xnew.flatten())
+        yM1 = np.vstack((yM1, ypred))
+        # method 2: SSGP with uncertainty
+        pred0 = ssgp0.predict_mean(xnew)
+        pred1 = ssgp1.predict_mean(xnew)
+        pred2 = ssgp2.predict_mean(xnew)
+        ypred = np.hstack((pred0, pred1, pred2))
+        yM2 = np.vstack((yM2, ypred))
+        # method 3: SGP with inducing points
+        ym0,yV0 = m30.predict(xnew)
+        ym1,yV1 = m31.predict(xnew)
+        ym2,yV2 = m32.predict(xnew)
+        ypred = np.array([ym0, ym1, ym2]).reshape((3,))
+        yM3 = np.vstack((yM3, ypred))
+        # method 4: SSGP origin
+        # yM4 = np.vstack((yM4, ypred))
+        # method 5: LWPR
+        # yM5 = np.vstack((yM5, ypred))
+
+        # update model with actual data
+        ynew = yhist[i,:]
+        # method 0: full GP
+        # no need to update, batch prediction
+        # method 1: recurGP
+        gpR.Update(xnew.flatten(), ynew)
+        # method 2: SSGP with uncertainty
+        ssgp0.update(xnew, np.array([[ynew[0]]]))
+        ssgp1.update(xnew, np.array([[ynew[1]]]))
+        ssgp2.update(xnew, np.array([[ynew[2]]]))
+        # method 3: SGP with inducing points
+
+        end_update = time.time()
+        print "{0} ms to perform {1} updates".format((end_update - start_update) *1000, 1)
+        
 
     # visualize data
     # Two subplots, the axes array is 1-d
@@ -232,3 +217,12 @@ if __name__ == '__main__':
     axarr[2].legend()
     axarr[2].set_title('Acc Z')
     plt.show()
+
+    """
+    print "{0} ms to perform {1} updates".format((end_update - start_update) *
+                                                 1000, Ntrh)
+    print "{0} ms per update".format((end_update - start_update) * 1000 / Ntrh)
+    print "{0} ms to perform {1} predictions".format((end_pred - start_pred) *
+                                                     1000, Nts)
+    print "{0} ms per prediction".format((end_pred - start_pred) * 1000 / Nts)
+    """
