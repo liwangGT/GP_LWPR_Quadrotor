@@ -151,6 +151,8 @@ if __name__ == '__main__':
         ym2,yV2 = m2.predict(xnew)
         ypred = np.array([ym0, ym1, ym2]).reshape((3,))
         yM0 = np.vstack((yM0, ypred))
+
+        """
         # method 1: recurGP
         ypred, Vy = gpR.Predict(xnew.flatten())
         yM1 = np.vstack((yM1, ypred))
@@ -182,7 +184,8 @@ if __name__ == '__main__':
         ssgp1.update(xnew, np.array([[ynew[1]]]))
         ssgp2.update(xnew, np.array([[ynew[2]]]))
         # method 3: SGP with inducing points
-
+        """
+     
         end_update = time.time()
         print "{0} ms to perform {1} updates".format((end_update - start_update) *1000, 1)
         
