@@ -117,16 +117,25 @@ if __name__ == '__main__':
     m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel30, num_inducing=20)
     m30.Z.unconstrain()
     m30.optimize('bfgs')
+    Z30 = m30.inducing_inputs # remember optimized inducing points
+    m30ic = GPy.models.SparseGPRegression(xnew,np.array([[ynew[0]]]),Z=Z30, kernel=kernel30)
+
 
     # optimize inducing points for dimension 1
     m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel31,num_inducing=20)
     m31.Z.unconstrain()
     m31.optimize('bfgs')
+    Z31 = m31.inducing_inputs # remember optimized inducing points
+    m31ic = GPy.models.SparseGPRegression(xnew,np.array([[ynew[1]]]),Z=Z31, kernel=kernel31)
+
 
     # optimize inducing points for dimension 2
     m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel32,num_inducing=20)
     m32.Z.unconstrain()
     m32.optimize('bfgs')
+    Z32 = m32.inducing_inputs # remember optimized inducing points
+    m32ic = GPy.models.SparseGPRegression(xnew,np.array([[ynew[2]]]),Z=Z32, kernel=kernel32)
+
 
 
     """
@@ -151,27 +160,35 @@ if __name__ == '__main__':
 
         # make prediction
         # method 0: full GP
+        t0_pred_s = time.time()
         ym0,yV0 = m0.predict(xnew)
         ym1,yV1 = m1.predict(xnew)
         ym2,yV2 = m2.predict(xnew)
         ypred = np.array([ym0, ym1, ym2]).reshape((3,))
         yM0 = np.vstack((yM0, ypred))
+        t0_pred_e = time.time()
 
         # method 1: recurGP
+        t1_pred_s = time.time()
         ypred, Vy = gpR.Predict(xnew.flatten())
         yM1 = np.vstack((yM1, ypred))
+        t1_pred_e = time.time()
         # method 2: SSGP with uncertainty
+        t2_pred_s = time.time()
         pred0 = ssgp0.predict_mean(xnew)
         pred1 = ssgp1.predict_mean(xnew)
         pred2 = ssgp2.predict_mean(xnew)
         ypred = np.hstack((pred0, pred1, pred2))
         yM2 = np.vstack((yM2, ypred))
+        t2_pred_e = time.time()
         # method 3: SGP with inducing points
-        ym0,yV0 = m30.predict(xnew)
-        ym1,yV1 = m31.predict(xnew)
-        ym2,yV2 = m32.predict(xnew)
+        t3_pred_s = time.time()
+        ym0,yV0 = m30ic.predict(xnew)
+        ym1,yV1 = m31ic.predict(xnew)
+        ym2,yV2 = m32ic.predict(xnew)
         ypred = np.array([ym0, ym1, ym2]).reshape((3,))
         yM3 = np.vstack((yM3, ypred))
+        t3_pred_e = time.time()
         # method 4: SSGP origin
         # yM4 = np.vstack((yM4, ypred))
         # method 5: LWPR
@@ -181,17 +198,30 @@ if __name__ == '__main__':
         ynew = yhist[i,:]
         # method 0: full GP
         # no need to update, batch prediction
+        t0_update_s = time.time()
+        t0_update_e = time.time()
         # method 1: recurGP
+        t1_update_s = time.time()
         gpR.Update(xnew.flatten(), ynew)
+        t1_update_e = time.time()
         # method 2: SSGP with uncertainty
+        t2_update_s = time.time()
         ssgp0.update(xnew, np.array([[ynew[0]]]))
         ssgp1.update(xnew, np.array([[ynew[1]]]))
         ssgp2.update(xnew, np.array([[ynew[2]]]))
+        t2_update_e = time.time()
         # method 3: SGP with inducing points
+        t3_update_s = time.time()
+        m30ic.set_XY(xhist[0:i+1,:],yhist[0:i+1,0][:,None])
+        m31ic.set_XY(xhist[0:i+1,:],yhist[0:i+1,1][:,None])
+        m32ic.set_XY(xhist[0:i+1,:],yhist[0:i+1,2][:,None])
+        t3_update_e = time.time()
      
         end_update = time.time()
-        print "{0} ms to perform {1} updates".format((end_update - start_update) *1000, 1)
-        
+        print "FullGP predict {0}ms, update {1}ms".format((t0_pred_e - t0_pred_s) *1000, (t0_update_e - t0_update_s) *1000)
+        print "RecurGP predict {0}ms, update {1}ms".format((t1_pred_e - t1_pred_s) *1000, (t1_update_e - t1_update_s) *1000)
+        print "SSGP uncertain predict {0}ms, update {1}ms".format((t2_pred_e - t2_pred_s) *1000, (t2_update_e - t2_update_s) *1000)
+        print "SGP induce predict {0}ms, update {1}ms".format((t3_pred_e - t3_pred_s) *1000, (t3_update_e - t3_update_s) *1000)
 
     # visualize data
     # Two subplots, the axes array is 1-d
