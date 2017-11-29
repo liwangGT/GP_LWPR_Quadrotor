@@ -105,21 +105,26 @@ if __name__ == '__main__':
     ssgp2.update(xnew, np.array([[ynew[2]]]))
 
 
+
     """
     Method 3: SSGP with inducing points
     """
+    # copy kernel parameter
+    kernel30 = kernel0.copy()
+    kernel31 = kernel1.copy()
+    kernel32 = kernel2.copy()
     # optimize inducing points for dimension 0
-    m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel0, num_inducing=20)
+    m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel30, num_inducing=20)
     m30.Z.unconstrain()
     m30.optimize('bfgs')
 
     # optimize inducing points for dimension 1
-    m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel1,num_inducing=20)
+    m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel31,num_inducing=20)
     m31.Z.unconstrain()
     m31.optimize('bfgs')
 
     # optimize inducing points for dimension 2
-    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel2,num_inducing=20)
+    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel32,num_inducing=20)
     m32.Z.unconstrain()
     m32.optimize('bfgs')
 
@@ -152,7 +157,6 @@ if __name__ == '__main__':
         ypred = np.array([ym0, ym1, ym2]).reshape((3,))
         yM0 = np.vstack((yM0, ypred))
 
-        """
         # method 1: recurGP
         ypred, Vy = gpR.Predict(xnew.flatten())
         yM1 = np.vstack((yM1, ypred))
@@ -184,7 +188,6 @@ if __name__ == '__main__':
         ssgp1.update(xnew, np.array([[ynew[1]]]))
         ssgp2.update(xnew, np.array([[ynew[2]]]))
         # method 3: SGP with inducing points
-        """
      
         end_update = time.time()
         print "{0} ms to perform {1} updates".format((end_update - start_update) *1000, 1)
