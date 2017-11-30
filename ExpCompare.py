@@ -24,13 +24,13 @@ import Recursive_GP.GP_pred as gp_cf
 from SSGP_Uncertainty.ssgpy import SSGPy as SSGP  # change if ssgpy.so is in another directory
 
 
+
 if __name__ == '__main__':
-    # load sim data, x is 9 dimensional, y is 3 dimensional
-    #f = open('genSimData/Sim_ground_truth01.pckl')
-    f = open('Sim_data/genSimData/Sim_ground_truth01.pckl')
+    # load exp data
+    f = open('Quadrotor_data/cf1_3rd_data_09202017_PIDdrift_v1GPWind_XY.pckl')
     dt, xhist, yhist, yreal =  pickle.load(f)
     f.close()
-    
+
     # time sequence
     tN = len(xhist[:,0])
     t = np.linspace(0, dt*(tN-1), tN)
@@ -46,30 +46,34 @@ if __name__ == '__main__':
     yM4 = np.empty((0,3))
     yM5 = np.empty((0,3))
 
+    # only use 500 data points for full GP optimization
+    Ntrain = min(1500, tN)
 
     # construct GP regressors for five different methods
     """
     Method 0: full GP
     """
+    print "Method 0: full GP"
     # Optimize hyper parameter with full GP (GPy)
     # get optimal parameters using GPy for dimension 0
     kernel0 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
-    m0 = GPy.models.GPRegression(xhist,yhist[:,0][:,None],kernel0)
+    m0 = GPy.models.GPRegression(xhist[:Ntrain+1, :],yhist[:Ntrain+1,0][:,None],kernel0)
     m0.optimize()
 
     # get optimal parameters using GPy for dimension 1
     kernel1 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
-    m1 = GPy.models.GPRegression(xhist,yhist[:,1][:,None],kernel1)
+    m1 = GPy.models.GPRegression(xhist[:Ntrain+1, :],yhist[:Ntrain+1,1][:,None],kernel1)
     m1.optimize()
 
     # get optimal parameters using GPy for dimension 2
     kernel2 = GPy.kern.RBF(input_dim=9, variance=1., lengthscale=1., ARD=True) + GPy.kern.White(1)
-    m2 = GPy.models.GPRegression(xhist,yhist[:,2][:,None],kernel2)
+    m2 = GPy.models.GPRegression(xhist[:Ntrain+1, :],yhist[:Ntrain+1,2][:,None],kernel2)
     m2.optimize()
 
     """
     Method 1: recursive GP
     """
+    print "Method 1: recursive GP"
     # TODO: split recursive GP into three, each with different ARD params
     xnew = xhist[0,:][None,:]
     ynew = yhist[0,:]
@@ -79,6 +83,7 @@ if __name__ == '__main__':
     """
     Method 2: SSGP with uncertainty
     """
+    print "Method 2: SSGP with uncertainty"
     # n is x dimension, k is y dimension, D is number of frequencies, ell is 
     D = 25
     # construct kernal for dimension 0
@@ -109,6 +114,7 @@ if __name__ == '__main__':
     """
     Method 3: SSGP with inducing points
     """
+    print "Method 3: SSGP with inducing points"
     # copy kernel parameter
     kernel30 = kernel0.copy()
     kernel31 = kernel1.copy()
@@ -146,16 +152,19 @@ if __name__ == '__main__':
     """
     Method 4: Sparse Spectrum Gaussian Process Regression
     """
+    print "Method 4: SSGP"
     # code is a simpler version of method 2
 
 
     """
     Method 5: Locally Weighted Project Regressor (LWPR)
     """
+    print "Method 5: LWPR"
     # TODO: add method here
 
 
 
+    print "Start incremental prediction"
     # test incremental prediction
     for i in range(1,tN):
         start_update = time.time()
