@@ -76,11 +76,11 @@ if __name__ == "__main__":
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]]) 
-    p0[5] = np.array([[1.8, 1., -0.6],
+    p0[5] = np.array([[1.8, 1., -0.5],
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]]) 
-    p0[6] = np.array([[1.8, -1., -0.8],
+    p0[6] = np.array([[1.8, -1., -0.9],
                    [0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]]) 
@@ -128,9 +128,9 @@ if __name__ == "__main__":
     ax.plot_surface(Xc, -Yc+p0[2][0,1], Zc+p0[2][0,2], alpha=0.1, rstride=rstride, cstride=cstride)
 
     #Tp = np.array([0.8, 1.5, 1.5, 1., 1., 1., 0.8,1.,1.])
-    Tp = 0.8*np.ones((len(p0),))
+    Tp = 1.2*np.ones((len(p0),))
     # interpolating waypoints
-    dt = 0.05
+    dt = 0.08
     thist = np.empty((0,1))
     xhist = np.empty((0,9))
     yhist = np.empty((0,3))
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     # save ground truth data
     # x value is: (rx,ry,rz, vx,vy,vz, rho, pitch, yaw)
     # y value is: (y1,y2,y3)
-    f = open('Sim_ground_truth01.pckl', 'w')
+    f = open('Sim_ground_truth03.pckl', 'w')
     pickle.dump([dt, xhist, yhist, yreal], f)
     f.close()
     print '----data logging completed!!!----'

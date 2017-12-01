@@ -370,15 +370,6 @@ if __name__ == '__main__':
     t_real = 0
     kk0 = 0
     kk = 0 # waypoint index
-    time.sleep(2)
-    plt.pause(.001)
-    time.sleep(2)
-    plt.pause(.001)
-    time.sleep(2)
-    plt.pause(.001)
-    time.sleep(2)
-    plt.pause(.001)
-    time.sleep(2)
     while not (rospy.is_shutdown() or t_real==int(t_total/dt)):
         tt0 = rospy.Time.now()
         if flag_done0 == 1 and kk <5:
