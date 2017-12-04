@@ -19,9 +19,9 @@ Experimental data is stored in '/Quadrotor_data'.
 
 To run comparison on Simulation data:
 
-$ python SimCompare.py
+    $ python SimCompare.py
 
 To run comparison on Experimental data:
 
-$ python ExpCompare.py
+    $ python ExpCompare.py
 
