@@ -12,15 +12,16 @@ Python packages 'GPy' and 'LWPR' are required to run the code. 'ssgpy.so' needs 
 
 ## Usage
 
-Simulation data is generated in '/Sim_data/genSimData'.
+Simulation data is generated in '/Sim_data/genSimData'. For example:
+$ python WaypointsGroundTruth03.py
 
 Experimental data is stored in '/Quadrotor_data'.
 
 To run comparison on Simulation data:
 
-python SimCompare.py
+$ python SimCompare.py
 
 To run comparison on Experimental data:
 
-python ExpCompare.py
+$ python ExpCompare.py
 
