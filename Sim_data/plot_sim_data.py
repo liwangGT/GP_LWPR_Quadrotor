@@ -17,7 +17,8 @@ from cvxopt import matrix, solvers
 import pickle #save multiple objects
 
 # add quad simulator path
-sys.path.insert(0, '/home/kgslovak/Desktop/Research/GP_LWPR_Quadrotor/Quad_simulator/Interp')
+# sys.path.insert(0, '/home/kgslovak/Desktop/Research/GP_LWPR_Quadrotor/Quad_simulator/Interp')
+sys.path.insert(0, '../Quad_simulator/Interp')
 from Spline_interp import *
 from Quad_visual import *
 
@@ -25,7 +26,7 @@ from Quad_visual import *
 if __name__ == "__main__":
     # load sim data
     #f = open('genSimData/Sim_ground_truth01.pckl')
-    f = open('genSimData/Sim_ground_truth02.pckl')
+    f = open('genSimData/Sim_ground_truth03.pckl')
     dt, xhist, yhist, yreal =  pickle.load(f)
     f.close()
     

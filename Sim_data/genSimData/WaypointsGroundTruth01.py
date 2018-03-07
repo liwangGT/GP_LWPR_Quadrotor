@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     Tp = np.array([0.8, 1.5, 1.5, 1., 1., 1., 0.8,1.,1.])
     # interpolating waypoints
-    dt = 0.05
+    dt = 0.02
     thist = np.empty((0,1))
     xhist = np.empty((0,9))
     yhist = np.empty((0,3))

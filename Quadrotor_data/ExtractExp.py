@@ -58,8 +58,10 @@ class Kalmanu():
 if __name__ == '__main__':
     # load Exp data, x is 9 dimensional, y is 3 dimensional
     # load experimental data
-    f = open('Exp20170920/cf1_3rd_data_09202017_GPOFFwind_v7_partial.pckl')
-    t_hist, p_hist, phat_hist, ptrack_hist, u_hist, uhat_hist, cmd_hist, cmdreal_hist, rpytrack_hist, imu_hist, gyro_hist, thrust_hover, pred_hist, flag_hist = pickle.load(f)
+    #f = open('Exp20170920/cf1_3rd_data_09202017_GPOFFwind_v7_partial.pckl')
+    #t_hist, p_hist, phat_hist, ptrack_hist, u_hist, uhat_hist, cmd_hist, cmdreal_hist, rpytrack_hist, imu_hist, gyro_hist, thrust_hover, pred_hist, flag_hist = pickle.load(f)
+    f = open('Exp20171205/cf1_3rd_data_12052017_wind2on.pckl')
+    t_hist, p_hist, phat_hist, ptrack_hist, u_hist, uhat_hist, cmd_hist, cmdreal_hist, rpytrack_hist, imu_hist, gyro_hist, thrust_hover = pickle.load(f)
 
 
     # preprocessing all data into (x,y) format
@@ -96,7 +98,7 @@ if __name__ == '__main__':
         imu = np.vstack((imu, imu_hist[i][None,:]))
         gyro = np.vstack((gyro, gyro_hist[i][None,:]))
         r = np.vstack((r, np.array([ptrack_hist[i][0], ptrack_hist[i][1], ptrack_hist[i][2]])))
-        yexp = np.vstack((yexp, np.array([pred_hist[i][0],pred_hist[i][1],pred_hist[i][2]])))
+        #yexp = np.vstack((yexp, np.array([pred_hist[i][0],pred_hist[i][1],pred_hist[i][2]])))
 
     for i in range(N):
         if i == 0:
@@ -136,7 +138,7 @@ if __name__ == '__main__':
     yhist = y1all
     yreal = y1all
     # save data
-    f = open('cf1_3rd_data_09202017_GPOFFwind_v7_partial_XY.pckl', 'w')
+    f = open('cf1_3rd_data_12052017_wind2on_XY.pckl', 'w')
     pickle.dump([dt, xhist, yhist, yreal], f)
     f.close()
 

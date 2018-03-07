@@ -160,6 +160,8 @@ if __name__ == "__main__":
            yhist = np.vstack((yhist, pk[2,:]*0.4+ynoise )) 
            yreal = np.vstack((yreal, pk[2,:]*0.4)) 
 
+    plt.savefig("test.eps",bbox_inches='tight')
+
     # save ground truth data
     # x value is: (rx,ry,rz, vx,vy,vz, rho, pitch, yaw)
     # y value is: (y1,y2,y3)

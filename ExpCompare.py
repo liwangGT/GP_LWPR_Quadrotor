@@ -27,7 +27,8 @@ from SSGP_Uncertainty.ssgpy import SSGPy as SSGP  # change if ssgpy.so is in ano
 
 if __name__ == '__main__':
     # load exp data
-    f = open('Quadrotor_data/cf1_3rd_data_09202017_PIDdrift_v1GPWind_XY.pckl')
+    #f = open('Quadrotor_data/cf1_3rd_data_09202017_PIDdrift_v1GPWind_XY.pckl')
+    f = open('Quadrotor_data/cf1_3rd_data_12052017_wind2on_XY.pckl')
     dt, xhist, yhist, yreal =  pickle.load(f)
     f.close()
 
@@ -120,7 +121,7 @@ if __name__ == '__main__':
     kernel31 = kernel1.copy()
     kernel32 = kernel2.copy()
     # optimize inducing points for dimension 0
-    m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel30, num_inducing=20)
+    m30 = GPy.models.SparseGPRegression(xhist,yhist[:,0][:,None],kernel=kernel30, num_inducing=50)
     m30.Z.unconstrain()
     m30.optimize('bfgs')
     Z30 = m30.inducing_inputs # remember optimized inducing points
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     m30ic.kern.fix()
 
     # optimize inducing points for dimension 1
-    m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel31,num_inducing=20)
+    m31 = GPy.models.SparseGPRegression(xhist,yhist[:,1][:,None],kernel=kernel31,num_inducing=50)
     m31.Z.unconstrain()
     m31.optimize('bfgs')
     Z31 = m31.inducing_inputs # remember optimized inducing points
@@ -138,7 +139,7 @@ if __name__ == '__main__':
     m31ic.kern.fix()
 
     # optimize inducing points for dimension 2
-    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel32,num_inducing=20)
+    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel32,num_inducing=50)
     m32.Z.unconstrain()
     m32.optimize('bfgs')
     Z32 = m32.inducing_inputs # remember optimized inducing points

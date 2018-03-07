@@ -31,6 +31,7 @@ if __name__ == '__main__':
     dt, xhist, yhist, yreal =  pickle.load(f)
     f.close()
     
+    # training using 1000 data point for GP opt
     # time sequence
     tN = len(xhist[:,0])
     t = np.linspace(0, dt*(tN-1), tN)
@@ -80,7 +81,7 @@ if __name__ == '__main__':
     Method 2: SSGP with uncertainty
     """
     # n is x dimension, k is y dimension, D is number of frequencies, ell is 
-    D = 25
+    D = 50#25
     # construct kernal for dimension 0
     sf20 = kernel0.rbf.variance
     ell0 = kernel0.rbf.lengthscale
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     m31ic.kern.fix()
 
     # optimize inducing points for dimension 2
-    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel32,num_inducing=20)
+    m32 = GPy.models.SparseGPRegression(xhist,yhist[:,2][:,None],kernel=kernel32,num_inducing=40)
     m32.Z.unconstrain()
     m32.optimize('bfgs')
     Z32 = m32.inducing_inputs # remember optimized inducing points
