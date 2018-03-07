@@ -286,7 +286,7 @@ if __name__ == '__main__':
     # save data for visualization purpose
     gpfile = 'Quadrotor_data/ExpGPdata/' + datafile+'_GP.pckl'
     with open(gpfile, 'wb') as f:
-        pickle.dump([yhist, yreal, yM0, yM2, yM3], f)
+        pickle.dump([xhist, yhist, yreal, yM0, yM2, yM3], f)
 
     """
     print "{0} ms to perform {1} updates".format((end_update - start_update) *
