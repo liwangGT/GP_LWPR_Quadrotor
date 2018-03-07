@@ -23,12 +23,22 @@ import pickle #save multiple objects
 import Recursive_GP.GP_pred as gp_cf
 from SSGP_Uncertainty.ssgpy import SSGPy as SSGP  # change if ssgpy.so is in another directory
 
+# arg parsers
+import argparse
 
 
 if __name__ == '__main__':
+    # parse data file, for batch processing
+    parser = argparse.ArgumentParser()
+    parser.add_argument("datafile", help="input the datafile name (without .pckl)")
+    args = parser.parse_args()
+    datafile =args.datafile
+
+
     # load exp data
     #f = open('Quadrotor_data/cf1_3rd_data_09202017_PIDdrift_v1GPWind_XY.pckl')
-    f = open('Quadrotor_data/cf1_3rd_data_12052017_wind2on_XY.pckl')
+    #datafile = "cf1_3rd_data_12052017_wind2on_XY"
+    f = open('Quadrotor_data/'+datafile+'.pckl')
     dt, xhist, yhist, yreal =  pickle.load(f)
     f.close()
 
@@ -270,7 +280,13 @@ if __name__ == '__main__':
     axarr[2].plot(range(1,yM3.shape[0]+1), yM3[:,2], 'kv', label='SSGP Induce')
     axarr[2].legend()
     axarr[2].set_title('Acc Z')
-    plt.show()
+    #plt.show()
+
+
+    # save data for visualization purpose
+    gpfile = 'Quadrotor_data/ExpGPdata/' + datafile+'_GP.pckl'
+    with open(gpfile, 'wb') as f:
+        pickle.dump([yhist, yreal, yM0, yM2, yM3], f)
 
     """
     print "{0} ms to perform {1} updates".format((end_update - start_update) *
